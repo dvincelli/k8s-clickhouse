@@ -1,0 +1,65 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clickhouse-server
+spec:
+  replicas: 15
+  serviceName: clickhouse-server
+  selector:
+    matchLabels:
+      app: clickhouse-server
+  template:
+    metadata:
+      labels:
+        app: clickhouse-server
+    spec:
+      terminationGracePeriodSeconds: 600
+      nodeSelector:
+        "kubernetes.io/os": linux
+      imagePullSecrets:
+        - name: ghcr
+      containers:
+        - name: clickhouse-server
+          image: docker.io/clickhouse/clickhouse-server:23.10-alpine
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SERVER_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          ports:
+          - containerPort: 9000
+          - containerPort: 8125
+          - containerPort: 9009
+          - containerPort: 9363
+          volumeMounts:
+          - mountPath: "/var/lib/clickhouse"
+            name: clickhouse-data-volume
+          - mountPath: "/etc/clickhouse-server/templates/"
+            name: clickhouse-config-templates-volume
+          - mountPath: "/docker-entrypoint-initdb.d/"
+            name: clickhouse-initdb-volume
+      volumes:
+        - name: clickhouse-config-templates-volume
+          configMap:
+            name: clickhouse-config-templates-configmap-v1
+        - name: clickhouse-initdb-volume
+          configMap:
+            name: clickhouse-initdb-configmap-v1
+  volumeClaimTemplates:
+  - metadata:
+      name: clickhouse-data-volume
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "default"
+      resources:
+        requests:
+          storage: 1Gi

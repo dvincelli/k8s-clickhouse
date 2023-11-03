@@ -1,0 +1,59 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clickhouse-keeper
+spec:
+  replicas: 3
+  serviceName: clickhouse-keeper
+  selector:
+    matchLabels:
+      app: clickhouse-keeper
+  template:
+    metadata:
+      labels:
+        app: clickhouse-keeper
+    spec:
+      terminationGracePeriodSeconds: 600
+      nodeSelector:
+        "kubernetes.io/os": linux
+      imagePullSecrets:
+        - name: ghcr
+      containers:
+        - name: clickhouse-keeper
+          env:
+            - name: SERVER_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: LOG_PATH
+              value: /dev/stdout
+            - name: ERROR_LOG_PATH
+              value: /dev/stderr
+          command:
+            - /bin/bash
+            - -c
+            - |
+              apk add envsubst
+              SERVER_ID=${SERVER_ID##*-} envsubst < /keeper_config.xml.template > /etc/clickhouse-keeper/keeper_config.xml
+              exec /entrypoint.sh
+          image: docker.io/clickhouse/clickhouse-keeper:23.10-alpine
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          ports:
+            - containerPort: 9181
+            - containerPort: 9234
+          volumeMounts:
+            - name: clickhouse-keeper-configd-volume
+              mountPath: "/keeper_config.xml.template"
+              subPath: config.xml
+      volumes:
+        - name: clickhouse-keeper-configd-volume
+          configMap:
+             name: clickhouse-keeper-configd-configmap-v1
