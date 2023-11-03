@@ -46,20 +46,20 @@ spec:
           - mountPath: "/etc/clickhouse-server/templates/"
             name: clickhouse-config-templates-volume
           - mountPath: "/docker-entrypoint-initdb.d/"
-            name: clickhouse-initdb-volume
+            name: clickhouse-initd-volume
       volumes:
         - name: clickhouse-config-templates-volume
           configMap:
             name: clickhouse-config-templates-configmap-v1
-        - name: clickhouse-initdb-volume
+        - name: clickhouse-initd-volume
           configMap:
-            name: clickhouse-initdb-configmap-v1
+            name: clickhouse-initd-configmap-v1
   volumeClaimTemplates:
   - metadata:
       name: clickhouse-data-volume
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: "default"
+      storageClassName: "csi-hostpath-sc"
       resources:
         requests:
           storage: 1Gi
