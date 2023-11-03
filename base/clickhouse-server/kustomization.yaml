@@ -5,3 +5,4 @@ resources:
   - statefulset.yaml
   - configmap.yaml
   - service.yaml
+  - ingress.yaml

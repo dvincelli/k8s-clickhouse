@@ -4,7 +4,7 @@ metadata:
   name: clickhouse-server
 spec:
   ports:
-  - port: 8125
+  - port: 8123
     name: http
   - port: 9000
     name: tcp

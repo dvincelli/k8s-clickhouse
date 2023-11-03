@@ -37,7 +37,7 @@ spec:
               memory: 512Mi
           ports:
           - containerPort: 9000
-          - containerPort: 8125
+          - containerPort: 8123
           - containerPort: 9009
           - containerPort: 9363
           volumeMounts:

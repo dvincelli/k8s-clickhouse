@@ -1,7 +1,17 @@
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
-  - role: control-plane
-    extraMounts:
-      - hostPath: /home/david/.kind/clickhouse/
-        containerPath: /data
+- role: control-plane
+  extraMounts:
+  - hostPath: /home/david/.kind/clickhouse/
+    containerPath: /data
+  kubeadmConfigPatches:
+  - |
+    kind: InitConfiguration
+    nodeRegistration:
+      kubeletExtraArgs:
+        node-labels: "ingress-ready=true"
+    extraPortMappings:
+    - containerPort: 8125
+      hostPort: 8125
+      protocol: TCP
