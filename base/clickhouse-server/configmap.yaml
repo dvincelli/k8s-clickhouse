@@ -37,6 +37,95 @@ data:
     <clickhouse>
       <shard>${SHARD_ID}</shard>
       <replica>${REPLICA_ID}</replica>
+      <cluster>cluster_5S_3R</cluster>
+    </clickhouse>
+  remote-servers.xml.template: >
+    <clickhouse>
+      <remote_servers replace="true">
+        <cluster_5S_3R>
+          <secret>${REPLICA_SECRET}</secret>
+            <shard>
+              <internal_replication>true</internal_replication>
+              <replica>
+                <host>clickhouse-server-0.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+              <replica>
+                <host>clickhouse-server-5.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+              <replica>
+                <host>clickhouse-server-10.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+            </shard>
+
+            <shard>
+              <internal_replication>true</internal_replication>
+              <replica>
+                <host>clickhouse-server-1.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+              <replica>
+                <host>clickhouse-server-6.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+              <replica>
+                <host>clickhouse-server-11.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+            </shard>
+
+            <shard>
+              <internal_replication>true</internal_replication>
+              <replica>
+                <host>clickhouse-server-2.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+              <replica>
+                <host>clickhouse-server-7.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+              <replica>
+                <host>clickhouse-server-12.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+            </shard>
+
+            <shard>
+              <internal_replication>true</internal_replication>
+              <replica>
+                <host>clickhouse-server-3.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+              <replica>
+                <host>clickhouse-server-8.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+              <replica>
+                <host>clickhouse-server-13.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+            </shard>
+
+            <shard>
+              <internal_replication>true</internal_replication>
+              <replica>
+                <host>clickhouse-server-4.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+              <replica>
+                <host>clickhouse-server-9.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+              <replica>
+                <host>clickhouse-server-14.clickhouse-server</host>
+                <port>9000</port>
+              </replica>
+            </shard>
+
+        </cluster_5S_3R>
+      </remote_servers>
     </clickhouse>
 ---
 apiVersion: v1
@@ -59,9 +148,11 @@ data:
     apk add envsubst
 
     SERVER_ID=${SERVER_ID##*-}
-    SHARD_ID=${SERVER_ID}
+    SHARD_ID=$(( SERVER_ID % 5 ))
     REPLICA_ID=$(( SERVER_ID % 3 ))
+    REPLICA_SECRET=changeme   # TODO: use proper secret storage
 
     envsubst < /etc/zookeeper-config/templates/macros.xml.template > /etc/zookeeper-config/config.d/macros.xml
     envsubst < /etc/zookeeper-config/templates/global.xml.template > /etc/zookeeper-config/config.d/global.xml
     envsubst < /etc/zookeeper-config/templates/keeper.xml.template > /etc/zookeeper-config/config.d/keeper.xml
+    envsubst < /etc/zookeeper-config/templates/remote-servers.xml.template > /etc/zookeeper-config/config.d/remote-servers.xml
